@@ -1,7 +1,6 @@
 package main
 
 import "encoding/binary"
-import "fmt"
 
 // This is an implementation of SHA256 from scratch.
 // Reference: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
@@ -32,25 +31,17 @@ func Maj(x uint32, y uint32, z uint32) uint32 {
 	return (x & y) ^ (x & z) ^ (y & z)
 }
 func SHR(n uint, x uint32) uint32 {
-	ans := x >> n
-	//fmt.Printf("SHR:  %x >> %d -> %x\n", x, n, ans)
-	return ans
+	return x >> n
 }
 func SHL(n uint, x uint32) uint32 {
-	ans := x << n
-	//fmt.Printf("SHL:  %x >> %d -> %x\n", x, n, ans)
-	return ans
+	return x << n
 }
 func ROTR(n uint, x uint32) uint32 {
 	n = n % 32
-	ans := SHR(n, x) | SHL(32-n, x)
-	//fmt.Printf("ROTR: %x >> %d -> %x\n", x, n, ans)
-	return ans
+	return SHR(n, x) | SHL(32-n, x)
 }
 func sigma_0_256(x uint32) uint32 {
-	ans := ROTR(2,x) ^ ROTR(13,x) ^ ROTR(22, x)
-	fmt.Printf("sigma_0_256: %x -> %x\n", x, ans)
-	return ans
+	return ROTR(2,x) ^ ROTR(13,x) ^ ROTR(22, x)
 }
 func sigma_1_256(x uint32) uint32 {
 	return ROTR(6,x) ^ ROTR(11,x) ^ ROTR(25, x)
@@ -70,13 +61,11 @@ func bytes2block(b []byte) [16]uint32 {
 }
 
 func TEST_SHA256 (message []byte) [32]byte {
-print_title("Hash message")
 	var hash [8]uint32
 	copy(hash[:], ih[:])
 	message_length := len(message)
 	// The complete blocks:
 	for complete_block_num:=0; complete_block_num < message_length/64; complete_block_num++ {
-print_title("Complete block\n")
 		block := bytes2block(message[complete_block_num * 64: complete_block_num * 64 + 64])
 		hash = SHA256_round(hash, block)
 	}
@@ -84,7 +73,6 @@ print_title("Complete block\n")
 	remaining_length := message_length % 64
 	have_length := remaining_length < (64 -1 -16) // Need one terminator and 16 length bytes to fit the padding in one block.
 	{
-print_title("Partial block\n")
 		var byte_block [64]byte
 		for byte_num:=0; byte_num < remaining_length; byte_num += 1 {
 			byte_block[byte_num] = message[message_length/64 + byte_num]
@@ -102,7 +90,6 @@ print_title("Partial block\n")
 	}
 	// We may need a second padded block:
 	if false == have_length {
-print_title("Final block\n")
 		var block [16]uint32
 			message_bitlen := message_length * 8
 			block[16-4] = uint32((uint64(message_bitlen)>>96) & 0xffffffff)
@@ -118,7 +105,6 @@ print_title("Final block\n")
 }
 
 func SHA256_round(hash [8]uint32, message_block [16]uint32) [8]uint32 {
-print_hashstate(message_block[:])
 	// The message schedule is on page 22:
 	var message_schedule [64]uint32
 	for t:=0; t<16; t++ {
@@ -130,10 +116,6 @@ print_hashstate(message_block[:])
 	}
 	// The hash initialisation is on page 22:
 	a,b,c,d,e,f,g,h := hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7]
-fmt.Printf("% 30s ", "Initial state:")
-print_hashstate(hash[:])
-fmt.Printf("Round % 2d: ", -1)
-print_hashstate([]uint32{a,b,c,d,e,f,g,h})
 	// The rounds are on page 23:
 	for t:=0; t<64; t+=1 {
 		t1 := h + sigma_1_256(e) + Ch(e,f,g) + k[t] + message_schedule[t]
@@ -146,20 +128,7 @@ print_hashstate([]uint32{a,b,c,d,e,f,g,h})
 		c = b
 		b = a
 		a = t1 + t2
-fmt.Printf("Round % 2d: ", t)
-print_hashstate([]uint32{a,b,c,d,e,f,g,h})
 	}
 	return [8]uint32{ hash[0] + a, hash[1] + b, hash[2] + c, hash[3] + d,
 			  hash[4] + e, hash[5] + f, hash[6] + g, hash[7] + h}
-}
-func print_hashstate (hash []uint32){
-	var ans [4]byte
-	for _,u := range hash {
-		binary.BigEndian.PutUint32(ans[:], u)
-		fmt.Printf("%08x ", ans)
-	}
-	fmt.Printf("\n")
-}
-func print_title(msg string) {
-	fmt.Printf("% -30s ", msg)
 }

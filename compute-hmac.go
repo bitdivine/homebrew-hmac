@@ -26,6 +26,5 @@ func main() {
 		secret, len([]byte(secret)),
 		message, len([]byte(message)),
 		TEST_SHA256([]byte(message)),
-		0)
-		//HMAC([]byte(secret), []byte(message)))
+		HMAC([]byte(secret), []byte(message)))
 }
