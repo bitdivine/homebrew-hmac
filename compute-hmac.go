@@ -16,13 +16,16 @@ Prints an HMAC to stderr.
 func main() {
 	var secret	string;
 	var message	string;
-	var hmac	string;
 	if 3 != len(os.Args) {
 		usage()
 		os.Exit(2)
 	}
 	secret  = os.Args[1]
 	message = os.Args[2]
-	hmac = secret + message
-	fmt.Printf("%v\n", hmac)
+	fmt.Printf("Key: '%s' (%d bytes)\nMsg: '%s' (%d bytes)\nHash: %x\nHMAC: %x\n",
+		secret, len([]byte(secret)),
+		message, len([]byte(message)),
+		TEST_SHA256([]byte(message)),
+		0)
+		//HMAC([]byte(secret), []byte(message)))
 }
