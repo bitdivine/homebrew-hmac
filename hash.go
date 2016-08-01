@@ -6,7 +6,8 @@ import "encoding/binary"
 // Reference: http://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
 // Validation:  http://csrc.nist.gov/groups/ST/toolkit/examples.html#aHashing
 // Validation:  http://csrc.nist.gov/groups/ST/toolkit/documents/Examples/SHA3-256_Msg0.pdf
-// WARNING: This is work in progress.  This hash currently fails the test vectors.
+// WARNING: This is work in progress.  This hash has passed a handful of test vectors but has not be tested on the full NIST suite.
+// NOTE: This hash applies to messages composed of full eight bit bytes.  It is unsitable for off-cut messages or 4-bit byte machines.
 
 var ih [8]uint32	// The initial value of the hash registers - see page 15.
 var k [64]uint32	// The round constants - see page 11.
